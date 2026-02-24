@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <OutputType>Exe</OutputType>
+
+    <!-- FORCE Windows apphost (the .exe wrapper) -->
+    <UseAppHost>true</UseAppHost>
+
+    <!-- Optional, but forces a Windows runtime-specific output folder -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>
