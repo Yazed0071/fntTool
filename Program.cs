@@ -1,4 +1,5 @@
-﻿// FNT <-> XML converter (based on Atvaark's fnt.bt template)
+﻿// Program.cs
+// FNT <-> XML converter
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -151,7 +152,7 @@ internal static class Program
     }
 
     // ================================
-    // FNT PARSE / WRITE (per fnt.bt)
+    // FNT PARSE / WRITE
     // ================================
 
     private static FntModel ParseFnt(string path)
@@ -241,7 +242,7 @@ internal static class Program
     }
 
     // ================================
-    // XML WRITE (arabia.xml-like)
+    // XML WRITE
     // ================================
 
     private static XDocument ToArabiaStyleXml(FntModel m)
@@ -282,7 +283,7 @@ internal static class Program
             );
 
         XElement root =
-            new XElement("fntFile",
+            new XElement("FfntFile",
                 new XAttribute(XNamespace.Xmlns + "xsi", XsiNs),
                 new XAttribute(XNamespace.Xmlns + "xsd", XsdNs),
                 new XElement("Entries",
@@ -294,15 +295,15 @@ internal static class Program
     }
 
     // ================================
-    // XML PARSE (arabia.xml-like)
+    // XML PARSE
     // ================================
 
     private static FntModel ParseArabiaStyleXml(string xmlPath)
     {
         XDocument doc = XDocument.Load(xmlPath);
         XElement root = doc.Root;
-        if (root == null || root.Name.LocalName != "fntFile")
-            throw new InvalidDataException("Invalid XML: expected <fntFile> root.");
+        if (root == null || root.Name.LocalName != "FfntFile")
+            throw new InvalidDataException("Invalid XML: expected <FfntFile> root.");
 
         XElement entries = root.Element("Entries");
         if (entries == null) throw new InvalidDataException("Invalid XML: missing <Entries>.");
@@ -332,7 +333,6 @@ internal static class Program
 
         foreach (XElement gEl in glyphsEl.Elements("Glyph"))
         {
-            // IMPORTANT: Character=" " (space) must be valid, so do NOT Trim / IsNullOrWhiteSpace.
             XAttribute charAttr = gEl.Attribute("Character");
             if (charAttr == null)
                 throw new InvalidDataException("Glyph missing Character attribute.");
@@ -378,7 +378,7 @@ internal static class Program
     }
 
     // ================================
-    // Character parsing (space-safe)
+    // Character parsing
     // ================================
 
     private static bool TryParseCharacterToCodeUnit(string s, out ushort code)
@@ -386,14 +386,12 @@ internal static class Program
         code = 0;
         if (s == null) return false;
 
-        // If exactly 1 UTF-16 code unit, accept directly (includes space!)
         if (s.Length == 1)
         {
             code = (ushort)s[0];
             return !IsSurrogate(code);
         }
 
-        // For escapes / numbers, trimming is fine
         string t = s.Trim();
 
         if (t == "\\t") { code = 0x0009; return true; }
@@ -459,7 +457,6 @@ internal static class Program
             return "\\u" + codeUnit.ToString("X4");
         }
 
-        // Space stays as literal " "
         return c.ToString();
     }
 
@@ -471,10 +468,6 @@ internal static class Program
         (c >= '0' && c <= '9') ||
         (c >= 'a' && c <= 'f') ||
         (c >= 'A' && c <= 'F');
-
-    // ================================
-    // Attribute readers
-    // ================================
 
     private static ushort ReadU16Attr(XElement el, string attrName)
     {
@@ -490,16 +483,12 @@ internal static class Program
         return Convert.ToInt16(a.Value.Trim());
     }
 
-    // ================================
-    // Models
-    // ================================
-
     private sealed class FntModel
     {
         public string SourcePath = "";
         public long FileSizeBytes;
 
-        // Header (from fnt.bt)
+        // Header
         public ushort UnknownHeader1;
         public ushort GlyphWidth1;
         public ushort GlyphWidth2;
