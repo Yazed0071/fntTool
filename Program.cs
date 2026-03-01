@@ -152,7 +152,7 @@ internal static class Program
     }
 
     // ================================
-    // FNT PARSE / WRITE
+    // FNT PARSE / WRITE (per fnt.bt)
     // ================================
 
     private static FntModel ParseFnt(string path)
@@ -169,10 +169,10 @@ internal static class Program
             m.FileSizeBytes = fileInfo.Length;
 
             m.UnknownHeader1 = br.ReadUInt16();
-            m.GlyphWidth1 = br.ReadUInt16();
-            m.GlyphWidth2 = br.ReadUInt16();
-            m.GlyphHeight1 = br.ReadUInt16();
-            m.GlyphHeight2 = br.ReadUInt16();
+            m.shrinkFactorX = br.ReadUInt16();
+            m.shrinkFactorY = br.ReadUInt16();
+            m.CharacterWidth = br.ReadUInt16();
+            m.CharacterHeight = br.ReadUInt16();
             m.GlyphCount = br.ReadUInt16();
 
             long expectedMin = HeaderSizeBytes + (long)m.GlyphCount * GlyphSizeBytes;
@@ -216,10 +216,10 @@ internal static class Program
         using (BinaryWriter bw = new BinaryWriter(fs, Encoding.UTF8, true))
         {
             bw.Write(m.UnknownHeader1);
-            bw.Write(m.GlyphWidth1);
-            bw.Write(m.GlyphWidth2);
-            bw.Write(m.GlyphHeight1);
-            bw.Write(m.GlyphHeight2);
+            bw.Write(m.shrinkFactorX);
+            bw.Write(m.shrinkFactorY);
+            bw.Write(m.CharacterWidth);
+            bw.Write(m.CharacterHeight);
             bw.Write(m.GlyphCount);
 
             for (int i = 0; i < m.Glyphs.Count; i++)
@@ -251,14 +251,14 @@ internal static class Program
         m.GlyphCount = (ushort)m.Glyphs.Count;
 
         XElement glyphMapEntry =
-            new XElement("FfntEntry",
+            new XElement("FntEntry",
                 new XAttribute(XsiNs + "type", "GlyphMap"),
                 new XElement("Header",
                     new XAttribute("Unknown1", m.UnknownHeader1),
-                    new XAttribute("GlyphWidth1", m.GlyphWidth1),
-                    new XAttribute("GlyphWidth2", m.GlyphWidth2),
-                    new XAttribute("GlyphHeight1", m.GlyphHeight1),
-                    new XAttribute("GlyphHeight2", m.GlyphHeight2),
+                    new XAttribute("shrinkFactorX", m.shrinkFactorX),
+                    new XAttribute("shrinkFactorY", m.shrinkFactorY),
+                    new XAttribute("CharacterWidth", m.CharacterWidth),
+                    new XAttribute("CharacterHeight", m.CharacterHeight),
                     new XAttribute("GlyphCount", m.GlyphCount)
                 ),
                 new XElement("Glyphs",
@@ -308,11 +308,11 @@ internal static class Program
         XElement entries = root.Element("Entries");
         if (entries == null) throw new InvalidDataException("Invalid XML: missing <Entries>.");
 
-        XElement glyphMap = entries.Elements("FfntEntry")
+        XElement glyphMap = entries.Elements("FntEntry")
             .FirstOrDefault(e => ((string)e.Attribute(XsiNs + "type")) == "GlyphMap");
 
         if (glyphMap == null)
-            throw new InvalidDataException("Invalid XML: missing <FfntEntry xsi:type=\"GlyphMap\">.");
+            throw new InvalidDataException("Invalid XML: missing <FntEntry xsi:type=\"GlyphMap\">.");
 
         XElement headerEl = glyphMap.Element("Header");
         if (headerEl == null) throw new InvalidDataException("Invalid XML: GlyphMap missing <Header>.");
@@ -321,10 +321,10 @@ internal static class Program
         m.SourcePath = Path.GetFullPath(xmlPath);
 
         m.UnknownHeader1 = ReadU16Attr(headerEl, "Unknown1");
-        m.GlyphWidth1 = ReadU16Attr(headerEl, "GlyphWidth1");
-        m.GlyphWidth2 = ReadU16Attr(headerEl, "GlyphWidth2");
-        m.GlyphHeight1 = ReadU16Attr(headerEl, "GlyphHeight1");
-        m.GlyphHeight2 = ReadU16Attr(headerEl, "GlyphHeight2");
+        m.shrinkFactorX = ReadU16Attr(headerEl, "shrinkFactorX");
+        m.shrinkFactorY = ReadU16Attr(headerEl, "shrinkFactorY");
+        m.CharacterWidth = ReadU16Attr(headerEl, "CharacterWidth");
+        m.CharacterHeight = ReadU16Attr(headerEl, "CharacterHeight");
 
         XElement glyphsEl = glyphMap.Element("Glyphs");
         if (glyphsEl == null) throw new InvalidDataException("Invalid XML: GlyphMap missing <Glyphs>.");
@@ -490,10 +490,10 @@ internal static class Program
 
         // Header
         public ushort UnknownHeader1;
-        public ushort GlyphWidth1;
-        public ushort GlyphWidth2;
-        public ushort GlyphHeight1;
-        public ushort GlyphHeight2;
+        public ushort shrinkFactorX;
+        public ushort shrinkFactorY;
+        public ushort CharacterWidth;
+        public ushort CharacterHeight;
         public ushort GlyphCount;
 
         public List<FntGlyph> Glyphs = new List<FntGlyph>();
